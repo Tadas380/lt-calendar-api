@@ -72,11 +72,6 @@ npm run dev        # http://localhost:3000
 npm run check      # typecheck + tests
 ```
 
-## Deploy to Render
-
-1. Push this repo to GitHub.
-2. On Render, choose **New → Blueprint** and pick the repo (it reads `render.yaml`).
-3. Once it's live, paste the URL at the top of this README.
 
 ## Project structure
 
