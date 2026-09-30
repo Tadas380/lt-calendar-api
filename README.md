@@ -4,7 +4,7 @@ A free, open JSON API for **Lithuanian name days (vardadieniai)** and **public h
 
 As far as I could find, there was no open, machine-readable source of Lithuanian name days, so I built one.
 
-**Live demo:** [(https://lt-calendar-api.onrender.com/)]
+**Live demo:** [https://lt-calendar-api.onrender.com/]
 
 ![CI](https://github.com/Tadas380/lt-calendar-api/actions/workflows/ci.yml/badge.svg)
 
