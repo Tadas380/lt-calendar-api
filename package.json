@@ -1,0 +1,23 @@
+{
+  "name": "lt-calendar-api",
+  "version": "1.0.0",
+  "description": "Free, open API for Lithuanian name days (vardadieniai) and public holidays (šventinės dienos).",
+  "type": "module",
+  "license": "MIT",
+  "author": "Tadas Kaziunas (https://github.com/Tadas380)",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "scripts": {
+    "start": "node src/server.ts",
+    "dev": "node --watch src/server.ts",
+    "build:data": "node scripts/build-data.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "check": "npm run typecheck && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.0",
+    "typescript": "^5.9.0"
+  }
+}

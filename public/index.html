@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LT Calendar API — Lithuanian name days & holidays</title>
+<meta name="description" content="Free, open JSON API for Lithuanian name days (vardadieniai) and public holidays. No key needed.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --surface: #ffffff;
+    --text: #1b1d1c;
+    --muted: #66706b;
+    --border: #e6e3dc;
+    --yellow: #fdb913;
+    --green: #006a44;
+    --red: #c1272d;
+    --green-soft: #e5f1eb;
+    --red-soft: #fbe9e9;
+    --code-bg: #f3f1ec;
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121413;
+      --surface: #1a1d1c;
+      --text: #ecefed;
+      --muted: #9aa39e;
+      --border: #2c302e;
+      --green: #3fbf87;
+      --red: #ef6b70;
+      --green-soft: #173027;
+      --red-soft: #3a1c1e;
+      --code-bg: #202422;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.55 Inter, system-ui, sans-serif;
+  }
+  a { color: var(--green); }
+  .flag { display: flex; height: 6px; }
+  .flag span { flex: 1; }
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header { padding: 48px 0 24px; }
+  .eyebrow { font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+  h1 { font-size: clamp(30px, 5vw, 44px); line-height: 1.1; margin: 0 0 12px; letter-spacing: -.02em; }
+  .lead { color: var(--muted); max-width: 640px; margin: 0; font-size: 18px; }
+  h2 { font-size: 22px; margin: 0 0 16px; letter-spacing: -.01em; }
+  section { padding: 28px 0; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; }
+
+  /* Today */
+  .today { display: grid; grid-template-columns: 1.4fr 1fr; gap: 16px; }
+  .today .date { color: var(--muted); font-size: 14px; margin-bottom: 6px; }
+  .names { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+  .chip { background: var(--code-bg); border-radius: 999px; padding: 4px 12px; font-size: 15px; }
+  .big { font-size: 28px; font-weight: 700; margin: 6px 0 2px; }
+  .pill { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+  .pill.off { background: var(--red-soft); color: var(--red); }
+  .pill.work { background: var(--green-soft); color: var(--green); }
+
+  /* Search */
+  .search { display: flex; gap: 8px; }
+  input[type=search] {
+    flex: 1; font: inherit; padding: 12px 14px; border-radius: 10px;
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+  }
+  input[type=search]:focus { outline: 2px solid var(--green); outline-offset: 1px; }
+  .results { margin-top: 14px; display: grid; gap: 8px; }
+  .result { display: flex; justify-content: space-between; gap: 12px; padding: 10px 14px; border: 1px solid var(--border); border-radius: 10px; }
+  .result small { color: var(--muted); }
+
+  /* Calendar */
+  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .cal-head button {
+    font: inherit; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 10px; padding: 6px 14px; cursor: pointer;
+  }
+  .cal-head strong { font-size: 18px; }
+  .grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+  .dow { font-size: 12px; color: var(--muted); text-align: center; padding-bottom: 4px; }
+  .day {
+    min-height: 84px; border: 1px solid var(--border); border-radius: 10px; padding: 6px 8px;
+    background: var(--surface); font-size: 12px; cursor: pointer; text-align: left; color: var(--text); font-family: inherit;
+    overflow: hidden;
+  }
+  .day:hover, .day:focus-visible { border-color: var(--green); outline: none; }
+  .day .n { font-weight: 600; font-size: 14px; display: block; }
+  .day .h { color: var(--red); font-weight: 600; display: block; margin-top: 2px; line-height: 1.25; }
+  .day .nm { color: var(--muted); display: block; margin-top: 2px; line-height: 1.3; }
+  .day.weekend { background: var(--code-bg); }
+  .day.holiday { background: var(--red-soft); border-color: transparent; }
+  .day.is-today { box-shadow: inset 0 0 0 2px var(--yellow); }
+  .day.blank { visibility: hidden; }
+  .detail { margin-top: 14px; min-height: 48px; color: var(--muted); }
+  .detail strong { color: var(--text); }
+
+  /* Docs */
+  .endpoint { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 10px; background: var(--surface); overflow: hidden; }
+  .endpoint summary { list-style: none; cursor: pointer; padding: 12px 16px; display: flex; gap: 12px; align-items: baseline; flex-wrap: wrap; }
+  .endpoint summary::-webkit-details-marker { display: none; }
+  .method { font: 600 12px 'JetBrains Mono', monospace; color: var(--green); }
+  code, pre { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; }
+  .endpoint summary code { font-size: 14px; }
+  .endpoint summary span.desc { color: var(--muted); font-size: 14px; }
+  .endpoint .body { padding: 0 16px 16px; }
+  pre { background: var(--code-bg); border-radius: 10px; padding: 14px; overflow: auto; max-height: 340px; margin: 10px 0 0; }
+  .try { font: inherit; font-size: 14px; border: 0; background: var(--green); color: #fff; border-radius: 8px; padding: 6px 14px; cursor: pointer; }
+  footer { padding: 40px 0 56px; color: var(--muted); font-size: 14px; }
+
+  @media (max-width: 720px) {
+    .today { grid-template-columns: 1fr; }
+    .day { min-height: 54px; padding: 4px; }
+    .day .nm, .day .h { display: none; }
+    .day.holiday .n { color: var(--red); }
+  }
+</style>
+</head>
+<body>
+<div class="flag" aria-hidden="true"><span style="background:var(--yellow)"></span><span style="background:#006a44"></span><span style="background:#c1272d"></span></div>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Free · Open source · No API key</p>
+    <h1>Lithuanian name days &amp; holidays API</h1>
+    <p class="lead">Vardadieniai, public holidays, days off and working-day counts as clean JSON. Use it in your website, bot or app.</p>
+  </header>
+
+  <section>
+    <div class="today">
+      <div class="card">
+        <div class="date" id="t-date">Loading…</div>
+        <div>Today's name days</div>
+        <div class="names" id="t-names"></div>
+      </div>
+      <div class="card">
+        <div class="date">Is today a day off?</div>
+        <div id="t-status"></div>
+        <div class="date" style="margin-top:14px">Next public holiday</div>
+        <div id="t-next"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>When is my name day?</h2>
+    <div class="card">
+      <div class="search">
+        <input type="search" id="q" placeholder="Type a name, e.g. Tadas or zygimantas" aria-label="Name" autocomplete="off">
+      </div>
+      <div class="results" id="results" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Calendar</h2>
+    <div class="card">
+      <div class="cal-head">
+        <button id="prev" aria-label="Previous month">←</button>
+        <strong id="cal-title"></strong>
+        <button id="next" aria-label="Next month">→</button>
+      </div>
+      <div class="grid" id="cal"></div>
+      <div class="detail" id="detail">Click a day to see all its names.</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Endpoints</h2>
+    <p style="color:var(--muted);margin-top:-6px">Base URL: <code id="base"></code> · All responses are JSON · CORS enabled · 120 requests/min per IP</p>
+    <div id="endpoints"></div>
+  </section>
+
+  <footer>
+    Holidays follow the Lithuanian Labour Code (Darbo kodeksas, Art. 123). Name-day data is community-maintained — found a mistake?
+    <a href="https://github.com/Tadas380/lt-calendar-api">Open an issue or PR on GitHub</a>.
+    Made in Kaunas by <a href="https://github.com/Tadas380">Tadas Kaziunas</a>.
+  </footer>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const api = (path) => fetch(path).then((r) => r.json());
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const fmt = (iso, opts = { day: 'numeric', month: 'long', year: 'numeric' }) =>
+  new Date(iso + 'T12:00:00').toLocaleDateString('lt-LT', opts);
+const fmtMd = (md) => new Date(`2024-${md}T12:00:00`).toLocaleDateString('lt-LT', { month: 'long', day: 'numeric' });
+
+// ---- Today ----
+async function loadToday() {
+  const t = await api('/api/v1/today');
+  $('t-date').textContent = `${fmt(t.date)}, ${t.weekday.lt}`;
+  $('t-names').innerHTML = t.namedays.map((n) => `<span class="chip">${esc(n)}</span>`).join('') || '<span class="chip">—</span>';
+  const label = t.isDayOff
+    ? `<span class="pill off">Day off</span> ${t.holiday ? esc(t.holiday.nameLt) : 'Weekend'}`
+    : `<span class="pill work">Working day</span>${t.isShortenedWorkday ? ' · 1 hour shorter (holiday tomorrow)' : ''}`;
+  $('t-status').innerHTML = `<div style="margin-top:6px">${label}</div>`;
+  const next = await api('/api/v1/holidays/next?includeSundayOnly=false');
+  if (next) {
+    const days = Math.round((new Date(next.date) - new Date(t.date)) / 86400000);
+    $('t-next').innerHTML = `<div class="big">${days === 0 ? 'Today' : `in ${days} d.`}</div><div>${esc(next.nameLt)} · ${fmt(next.date, { month: 'long', day: 'numeric' })}</div>`;
+  }
+  return t.date;
+}
+
+// ---- Search ----
+let timer;
+$('q').addEventListener('input', (e) => {
+  clearTimeout(timer);
+  const q = e.target.value.trim();
+  if (q.length < 2) { $('results').innerHTML = ''; return; }
+  timer = setTimeout(async () => {
+    const data = await api(`/api/v1/namedays/search?q=${encodeURIComponent(q)}&limit=8`);
+    $('results').innerHTML = (data.results || []).map((r) =>
+      `<div class="result"><strong>${esc(r.name)}</strong><small>${r.dates.map(fmtMd).join(', ')}</small></div>`
+    ).join('') || '<div class="result"><small>No name days found for that name.</small></div>';
+  }, 200);
+});
+
+// ---- Calendar ----
+let view;
+let todayIso;
+async function renderCalendar() {
+  const { year, month } = view;
+  const data = await api(`/api/v1/calendar/${year}/${String(month).padStart(2, '0')}`);
+  $('cal-title').textContent = new Date(year, month - 1, 1).toLocaleDateString('lt-LT', { month: 'long', year: 'numeric' });
+  const dows = ['Pr', 'An', 'Tr', 'Kt', 'Pn', 'Št', 'Sk'];
+  const offset = (new Date(year, month - 1, 1).getDay() + 6) % 7; // Monday first
+  let html = dows.map((d) => `<div class="dow">${d}</div>`).join('');
+  html += '<div class="day blank"></div>'.repeat(offset);
+  for (const d of data.days) {
+    const cls = ['day', d.reason === 'weekend' && 'weekend', d.holiday && 'holiday', d.date === todayIso && 'is-today'].filter(Boolean).join(' ');
+    html += `<button class="${cls}" data-date="${d.date}">
+      <span class="n">${Number(d.date.slice(8))}</span>
+      ${d.holiday ? `<span class="h">${esc(d.holiday.nameLt.split(' (')[0])}</span>` : ''}
+      <span class="nm">${esc(d.namedays.slice(0, 2).join(', '))}${d.namedays.length > 2 ? '…' : ''}</span>
+    </button>`;
+  }
+  $('cal').innerHTML = html;
+  $('cal').onclick = (e) => {
+    const btn = e.target.closest('.day[data-date]');
+    if (!btn) return;
+    const d = data.days.find((x) => x.date === btn.dataset.date);
+    $('detail').innerHTML = `<strong>${fmt(d.date)}</strong> — ${d.holiday ? `<span style="color:var(--red)">${esc(d.holiday.nameLt)}</span> · ` : ''}${esc(d.namedays.join(', ') || 'no name days')}`;
+  };
+}
+$('prev').onclick = () => { view.month--; if (view.month < 1) { view.month = 12; view.year--; } renderCalendar(); };
+$('next').onclick = () => { view.month++; if (view.month > 12) { view.month = 1; view.year++; } renderCalendar(); };
+
+// ---- Endpoint docs ----
+const endpoints = [
+  ['/api/v1/today', 'Everything about today: name days, holiday, day off'],
+  ['/api/v1/days/2026-12-24', 'Same info for any date'],
+  ['/api/v1/namedays/today', "Today's name days"],
+  ['/api/v1/namedays/03-04', 'Name days on a date (MM-DD or YYYY-MM-DD)'],
+  ['/api/v1/namedays/name/Tadas', 'When a name is celebrated (ignores case and diacritics)'],
+  ['/api/v1/namedays/search?q=gyt', 'Prefix search for autocomplete'],
+  ['/api/v1/namedays?month=06', 'All name days, optionally for one month'],
+  ['/api/v1/holidays/2027', 'All public holidays in a year (Easter calculated)'],
+  ['/api/v1/holidays/next', 'Next public holiday (add ?includeSundayOnly=false to skip Mother\'s/Father\'s Day)'],
+  ['/api/v1/working-days?from=2026-12-01&to=2026-12-31', 'Count working days in a range'],
+  ['/api/v1/calendar/2026/12', 'Full month for building calendars'],
+];
+$('base').textContent = location.origin;
+$('endpoints').innerHTML = endpoints.map(([path, desc], i) => `
+  <details class="endpoint">
+    <summary><span class="method">GET</span><code>${esc(path)}</code><span class="desc">${esc(desc)}</span></summary>
+    <div class="body"><button class="try" data-i="${i}">Try it</button><pre id="out-${i}" hidden></pre></div>
+  </details>`).join('');
+$('endpoints').addEventListener('click', async (e) => {
+  const btn = e.target.closest('.try');
+  if (!btn) return;
+  const out = $(`out-${btn.dataset.i}`);
+  out.hidden = false;
+  out.textContent = 'Loading…';
+  const res = await fetch(endpoints[btn.dataset.i][0]);
+  out.textContent = `HTTP ${res.status}\n\n` + JSON.stringify(await res.json(), null, 2);
+});
+
+// ---- Boot ----
+loadToday().then((iso) => {
+  todayIso = iso;
+  view = { year: Number(iso.slice(0, 4)), month: Number(iso.slice(5, 7)) };
+  renderCalendar();
+}).catch(() => { $('t-date').textContent = 'Could not reach the API.'; });
+</script>
+</body>
+</html>
